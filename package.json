@@ -1,0 +1,22 @@
+{
+  "name": "proxy-management-server",
+  "version": "1.0.0",
+  "description": "通用反向代理管理系统 — 支持 TLS 指纹绕过、密钥注入、Web 管理界面",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build": "cd client && npm run build",
+    "start": "cd server && npm start",
+    "db:migrate": "cd server && npm run db:migrate",
+    "docker:build": "docker build -f deploy/Dockerfile -t proxy-server .",
+    "docker:build-yaml": "docker build -f deploy/Dockerfile.yaml -t proxy-server-yaml .",
+    "docker:save": "docker save proxy-server -o proxy-server.tar",
+    "docker:save-yaml": "docker save proxy-server-yaml -o proxy-server-yaml.tar",
+    "docker:load": "docker load -i proxy-server.tar",
+    "docker:load-yaml": "docker load -i proxy-server-yaml.tar"
+  },
+  "keywords": ["proxy", "reverse-proxy", "tls-bypass", "tianditu"],
+  "license": "MIT"
+}
