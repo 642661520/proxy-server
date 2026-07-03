@@ -1,0 +1,47 @@
+# ═══════════════════════════════════════════
+# Proxy Manager — 静态资源 + 代理混合配置
+# docker 部署配置
+#   ports:
+#     - "3000:3000"
+#   volumes:
+#     - ./config.yaml:/app/config.yaml:ro
+#     - ./static-demo:/app/www:ro        # 静态文件目录
+#   environment:
+#     - CONFIG_FILE=/app/config.yaml
+# 开发启动: npx tsx server/src/start-yaml.ts --config=config.yaml
+# ═══════════════════════════════════════════
+
+port: 3000
+log_level: info
+
+proxies:
+  # ─── 静态站点：OpenLayers 地图 Demo ───
+  - name: OL 地图 Demo
+    path_prefix: /
+    upstream_url: ""
+    # static_dir: ./static-demo       # 本地开发
+    static_dir: /app/www          # Docker 部署（配合 volume 挂载）
+    index: index.html
+    cache_ttl: 3600
+
+  # ─── 天地图瓦片代理（负载均衡：t0 ~ t7） ───
+  - name: 天地图瓦片
+    path_prefix: /tdt/
+    upstream_url: https://t0.tianditu.gov.cn   # 单域名 fallback
+    upstream_urls:                              # 多域名负载均衡（优先）
+      - https://t0.tianditu.gov.cn
+      - https://t1.tianditu.gov.cn
+      - https://t2.tianditu.gov.cn
+      - https://t3.tianditu.gov.cn
+      - https://t4.tianditu.gov.cn
+      - https://t5.tianditu.gov.cn
+      - https://t6.tianditu.gov.cn
+      - https://t7.tianditu.gov.cn
+    lb_strategy: random             # random（默认）或 rr（轮询）
+    upstream_host: t0.tianditu.gov.cn
+    strip_prefix: true
+    cache_ttl: 3600
+    injections:
+      - into: query
+        name: tk
+        value: b20a5cf27754495fb3f572f39a0c0a9c

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenLayers 演示 — Proxy Server</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #1a1a2e; color: #e0e0e0; }
+  #map { width: 100%; height: calc(100vh - 48px); }
+  #toolbar {
+    height: 48px; display: flex; align-items: center; gap: 12px;
+    padding: 0 16px; background: #16213e; border-bottom: 1px solid #0f3460;
+    font-size: 14px;
+  }
+  #toolbar .brand { font-weight: 700; font-size: 16px; color: #e94560; margin-right: auto; }
+  #toolbar button {
+    padding: 4px 14px; border: 1px solid #0f3460; border-radius: 6px;
+    background: #1a1a2e; color: #e0e0e0; cursor: pointer; font-size: 13px;
+    transition: all .15s;
+  }
+  #toolbar button:hover { background: #0f3460; border-color: #e94560; }
+  #toolbar button.active { background: #e94560; border-color: #e94560; color: #fff; }
+  #coords { font-size: 12px; color: #8892b0; min-width: 200px; text-align: right; }
+  .ol-zoom { top: 60px; left: 12px; }
+  .ol-attribution { font-size: 11px !important; }
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@10.4.0/ol.min.css">
+<script src="https://cdn.jsdelivr.net/npm/ol@10.4.0/dist/ol.min.js"></script>
+</head>
+<body>
+
+<div id="toolbar">
+  <span class="brand">OL Demo</span>
+  <button id="btn-osm" class="active">OSM 标准</button>
+  <button id="btn-terrain">地形图</button>
+  <button id="btn-satellite">卫星图</button>
+  <button id="btn-tianditu">天地图 (代理)</button>
+  <button id="btn-reset">重置视角</button>
+  <span id="coords">—</span>
+</div>
+
+<div id="map"></div>
+
+<script>
+  // ── Base layers ────────────────────────────────
+  const osmLayer = new ol.layer.Tile({
+    title: 'OSM',
+    visible: true,
+    source: new ol.source.OSM(),
+  });
+
+  // Terrain with hillshade overlay via Stadia Maps (no-key needed for localhost)
+  const terrainLayer = new ol.layer.Tile({
+    title: '地形',
+    visible: false,
+    source: new ol.source.XYZ({
+      url: 'https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}.png',
+      attributions: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>',
+      maxZoom: 18,
+    }),
+  });
+
+  // Satellite via ESRI
+  const satelliteLayer = new ol.layer.Tile({
+    title: '卫星',
+    visible: false,
+    source: new ol.source.XYZ({
+      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      attributions: '&copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+      maxZoom: 19,
+    }),
+  });
+
+  // Tianditu — accessed through local proxy /tdt/ → t0.tianditu.gov.cn
+  // URL: /tdt/{layer}_{proj}/wmts?...&TILECOL={x}&TILEROW={y}&TILEMATRIX={z}
+  const tiandituLayer = new ol.layer.Tile({
+    title: '天地图',
+    visible: false,
+    source: new ol.source.XYZ({
+      url: '/tdt/vec_w/wmts?LAYER=vec&SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',
+      attributions: '&copy; 天地图 &mdash; 通过代理访问',
+      maxZoom: 18,
+    }),
+  });
+
+  // Tianditu annotation overlay (labels/road names)
+  const tiandituCvaLayer = new ol.layer.Tile({
+    title: '天地图注记',
+    visible: false,
+    source: new ol.source.XYZ({
+      url: '/tdt/cva_w/wmts?LAYER=cva&SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',
+      attributions: '&copy; 天地图',
+      maxZoom: 18,
+    }),
+  });
+
+  // ── Markers ─────────────────────────────────────
+  const beijing = ol.proj.fromLonLat([116.4074, 39.9042]);
+  const shanghai = ol.proj.fromLonLat([121.4737, 31.2304]);
+  const shenzhen = ol.proj.fromLonLat([114.0579, 22.5431]);
+
+  const markerStyle = new ol.style.Style({
+    image: new ol.style.Circle({
+      radius: 8,
+      fill: new ol.style.Fill({ color: '#e94560' }),
+      stroke: new ol.style.Stroke({ color: '#fff', width: 2 }),
+    }),
+  });
+
+  const markersSource = new ol.source.Vector();
+  [beijing, shanghai, shenzhen].forEach(coord => {
+    markersSource.addFeature(new ol.Feature({ geometry: new ol.geom.Point(coord) }));
+  });
+
+  const markerLayer = new ol.layer.Vector({
+    title: '城市',
+    source: markersSource,
+    style: markerStyle,
+  });
+
+  // ── Coordinates display (EPSG:4326) ─────────────
+  const coordsEl = document.getElementById('coords');
+
+  // ── Map ─────────────────────────────────────────
+  const map = new ol.Map({
+    target: 'map',
+    layers: [osmLayer, terrainLayer, satelliteLayer, tiandituLayer, tiandituCvaLayer, markerLayer],
+    view: new ol.View({
+      center: ol.proj.fromLonLat([116.4, 35.7]),
+      zoom: 5,
+      minZoom: 3,
+      maxZoom: 19,
+    }),
+  });
+
+  map.on('pointermove', (e) => {
+    const lonLat = ol.proj.toLonLat(e.coordinate);
+    coordsEl.textContent = `经度 ${lonLat[0].toFixed(4)}  纬度 ${lonLat[1].toFixed(4)}`;
+  });
+
+  // ── Toolbar buttons ─────────────────────────────
+  const layers = { osm: osmLayer, terrain: terrainLayer, satellite: satelliteLayer, tianditu: tiandituLayer };
+  const buttons = {
+    osm: document.getElementById('btn-osm'),
+    terrain: document.getElementById('btn-terrain'),
+    satellite: document.getElementById('btn-satellite'),
+    tianditu: document.getElementById('btn-tianditu'),
+  };
+
+  function switchLayer(name) {
+    Object.entries(layers).forEach(([k, l]) => { l.setVisible(k === name || (name === 'tianditu' && (k === 'tiandituCva' || k === 'cva'))); });
+    Object.entries(buttons).forEach(([k, b]) => { b.classList.toggle('active', k === name); });
+  }
+
+  buttons.osm.addEventListener('click', () => switchLayer('osm'));
+  buttons.terrain.addEventListener('click', () => switchLayer('terrain'));
+  buttons.satellite.addEventListener('click', () => switchLayer('satellite'));
+  buttons.tianditu.addEventListener('click', () => switchLayer('tianditu'));
+
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    map.getView().animate({ center: ol.proj.fromLonLat([116.4, 35.7]), zoom: 5, duration: 600 });
+  });
+</script>
+</body>
+</html>

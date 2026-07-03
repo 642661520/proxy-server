@@ -1,0 +1,32 @@
+# ─── YAML 纯服务端精简镜像 ───
+# 构建: docker build -f deploy/Dockerfile.yaml -t proxy-server-yaml .
+# 无 Admin UI、无 SQLite、无 Express，仅 4 个 npm 依赖
+
+FROM node:22-alpine
+
+WORKDIR /app
+
+# 仅 YAML 模式需要的运行时依赖（无 native 编译模块）
+RUN npm install tsx@4.19.2 js-yaml@4.1.0 pino@9.5.0 pino-pretty@11.3.0 lru-cache@11.0.2 dotenv@16.4.7
+
+# 复制代理引擎核心源码
+COPY server/src/start-yaml.ts        ./src/start-yaml.ts
+COPY server/src/config.ts            ./src/config.ts
+COPY server/src/proxy-engine/        ./src/proxy-engine/
+COPY server/src/yaml-config/         ./src/yaml-config/
+COPY server/src/utils/ip.ts          ./src/utils/ip.ts
+COPY server/src/utils/url.ts         ./src/utils/url.ts
+COPY server/src/utils/file-logger.ts  ./src/utils/file-logger.ts
+COPY server/src/modules/proxies/     ./src/modules/proxies/
+COPY server/src/logger.ts            ./src/logger.ts
+COPY server/tsconfig.json            ./
+
+# 入口
+COPY deploy/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# 默认静态文件目录（可被 volume 覆盖）
+RUN mkdir -p /app/www
+
+EXPOSE 3000
+ENTRYPOINT ["/entrypoint.sh"]
