@@ -4,7 +4,7 @@ import http from 'http';
 import { URL } from 'url';
 import { createReadStream, existsSync, statSync } from 'fs';
 import { resolve, extname, join } from 'path';
-import type { ProxyConfig } from '../modules/proxies/proxy.service.js';
+import type { ProxyConfig } from '../types.js';
 import { buildUpstreamUrl } from '../utils/url.js';
 import { logger } from '../logger.js';
 
@@ -286,7 +286,7 @@ export function forwardRequest(
     };
 
     // Override Host header
-    options.headers!['host'] = proxy.upstream_host || parsedUrl.hostname;
+    (options.headers as any)['host'] = proxy.upstream_host || parsedUrl.hostname;
 
     // Set SNI if specified
     if (proxy.tls_servername) {
@@ -302,7 +302,7 @@ export function forwardRequest(
     const hopByHop = ['connection', 'keep-alive', 'proxy-connection', 'proxy-authenticate',
       'proxy-authorization', 'te', 'trailers', 'transfer-encoding', 'upgrade'];
     for (const h of hopByHop) {
-      delete options.headers![h];
+      delete (options.headers as any)[h];
     }
 
     // Add X-Forwarded-For

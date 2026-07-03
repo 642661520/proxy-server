@@ -1,5 +1,5 @@
 import { LRUCache } from 'lru-cache';
-import type { ProxyConfig } from '../modules/proxies/proxy.service.js';
+import type { ProxyConfig } from '../types.js';
 import { IncomingMessage } from 'http';
 import { logger } from '../logger.js';
 

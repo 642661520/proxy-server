@@ -1,7 +1,7 @@
 import { readFileSync, watch } from 'fs';
 import { resolve } from 'path';
 import { load as parseYaml } from 'js-yaml';
-import type { ProxyConfig } from '../modules/proxies/proxy.service.js';
+import type { ProxyConfig } from '../types.js';
 import { logger } from '../logger.js';
 
 export interface YamlProxyConfig {
