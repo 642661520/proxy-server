@@ -3,6 +3,10 @@ import { resolve } from 'path';
 
 let logDir = '';
 
+function getRetentionDays(): number {
+  return parseInt(process.env.LOG_RETENTION_DAYS || '30', 10);
+}
+
 export function initFileLogging(dir: string): void {
   logDir = dir;
   if (!existsSync(dir)) {
@@ -53,10 +57,10 @@ function cleanup(prefix: string, maxDays: number): void {
 
 /** System log: receives raw JSON line from Pino, writes to server-YYYY-MM-DD.log */
 export function writeServerLog(line: string): void {
-  writeRotated('server', line, 7);
+  writeRotated('server', line, getRetentionDays());
 }
 
-/** Audit log: data/logs/access-YYYY-MM-DD.log, keep 30 days */
+/** Audit log: data/logs/access-YYYY-MM-DD.log */
 export function auditLog(entry: Record<string, unknown>): void {
-  writeRotated('access', JSON.stringify(entry), 30);
+  writeRotated('access', JSON.stringify(entry), getRetentionDays());
 }
