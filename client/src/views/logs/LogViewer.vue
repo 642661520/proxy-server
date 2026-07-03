@@ -50,6 +50,6 @@ onMounted(load);
       <input v-model="filters.statusCode" class="input w-24 sm:w-28" :placeholder="t.logs.statusCode" aria-label="按状态码筛选" @input="onFilterInput" />
       <input v-model="filters.proxyId" class="input w-24 sm:w-28" :placeholder="t.logs.proxyId" aria-label="按代理ID筛选" @input="onFilterInput" />
     </div>
-    <AppTable :columns="cols" :data="logs" :pagination="{ page, pageSize: 50, total }" @update:pagination="(p) => onPageChange(p.page)" />
+    <AppTable :columns="cols" :data="logs" :pagination="{ page, pageSize: 50, total }" max-height="calc(100dvh - 260px)" @update:pagination="(p) => onPageChange(p.page)" />
   </div>
 </template>

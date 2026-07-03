@@ -6,6 +6,7 @@ const props = withDefaults(defineProps<{
   columns: { key: string; title: string; width?: string; render?: (row: any) => any }[];
   data: any[];
   pagination?: { page: number; pageSize: number; total: number } | false;
+  maxHeight?: string;
 }>(), { pagination: false });
 
 const emit = defineEmits<{ 'update:pagination': [p: { page: number; pageSize: number }] }>();
@@ -34,7 +35,7 @@ const pageNumbers = computed(() => {
 </script>
 
 <template>
-  <div class="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800">
+  <div class="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800" :style="maxHeight ? { maxHeight, overflowY: 'auto', display: 'flex', flexDirection: 'column' } : {}">
     <table class="w-full">
       <thead class="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
         <tr>
