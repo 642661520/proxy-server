@@ -69,7 +69,7 @@ const icons: Record<string, string> = {
     </aside>
 
     <!-- Main -->
-    <div class="flex-1 flex flex-col lg:ml-56">
+    <div class="flex-1 flex flex-col lg:ml-56 min-w-0">
       <header class="sticky top-0 h-14 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between px-4 sm:px-6 z-30">
         <!-- Hamburger (mobile) -->
         <button class="btn-ghost btn-sm lg:hidden -ml-1" @click="mobileOpen = !mobileOpen">
