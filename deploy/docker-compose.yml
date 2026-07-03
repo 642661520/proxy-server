@@ -1,34 +1,13 @@
 version: '3.8'
 
 services:
-  # ─── Web 管理模式 ───
-  proxy-server:
-    build:
-      context: ..
-      dockerfile: deploy/Dockerfile
-    ports:
-      - "3005:3005"
-      - "3006:3006"
-    volumes:
-      - ../data:/app/data
-    environment:
-      - NODE_ENV=production
-      - DATA_DIR=/app/data
-      - ADMIN_PORT=3005
-      - PROXY_PORT=3006
-      - PROXY_MASTER_KEY=${PROXY_MASTER_KEY:-}
-      - JWT_SECRET=${JWT_SECRET:-}
-      - ADMIN_DEFAULT_PASSWORD=${ADMIN_DEFAULT_PASSWORD:-admin123}
-      - LOG_RETENTION_DAYS=30
-    restart: unless-stopped
-
-  # ─── YAML 纯服务端模式（按需启用） ───
+  # ─── YAML 纯服务端模式 ───
   proxy-yaml:
     build:
       context: ..
       dockerfile: deploy/Dockerfile.yaml
     ports:
-      - "3000:3000"
+      - "3003:3003"
     volumes:
       - ./config.yaml:/app/config.yaml:ro
       - ../static-demo:/app/www:ro        # 静态文件目录
