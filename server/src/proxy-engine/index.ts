@@ -1,6 +1,6 @@
 import type { Server } from 'http';
 import { IncomingMessage, ServerResponse } from 'http';
-import { matchProxy, rebuildRouteTable } from './router.js';
+import { matchProxy } from './router.js';
 import { forwardRequest, serveStaticFile } from './forwarder.js';
 import { applyInjections } from './injector.js';
 import { checkAccess } from './access-guard.js';
@@ -10,9 +10,6 @@ import { logRequest } from './auditor.js';
 import { logger } from '../logger.js';
 
 export function initProxyEngine(server: Server): void {
-  // Build initial route table
-  rebuildRouteTable();
-
   server.on('request', async (clientReq: IncomingMessage, clientRes: ServerResponse) => {
     const startTime = Date.now();
     const clientIp = clientReq.socket.remoteAddress

@@ -1,24 +1,15 @@
-import { getEnabledProxies, type ProxyConfig, proxyEvents } from '../modules/proxies/proxy.service.js';
+import type { ProxyConfig } from '../types.js';
 import { logger } from '../logger.js';
 
-// In-memory routing table (copy-on-write)
+// In-memory routing table (set from YAML config)
 let routeTable: ProxyConfig[] = [];
-let useYamlMode = false;
 
 export function getRouteTable(): ProxyConfig[] {
   return routeTable;
 }
 
-export function rebuildRouteTable(): void {
-  if (!useYamlMode) {
-    routeTable = getEnabledProxies();
-    logger.info({ count: routeTable.length }, 'Route table rebuilt from DB');
-  }
-}
-
-/** Set route table directly (YAML mode) */
+/** Set route table directly from YAML config */
 export function setRouteTable(proxies: ProxyConfig[]): void {
-  useYamlMode = true;
   routeTable = proxies;
   logger.info({ count: routeTable.length }, 'Route table set from YAML');
 }
@@ -47,10 +38,3 @@ export function matchProxy(reqHostname: string | undefined, reqPath: string, req
 
   return null;
 }
-
-// Listen for config changes (DB mode only)
-proxyEvents.on('changed', () => {
-  if (!useYamlMode) {
-    rebuildRouteTable();
-  }
-});

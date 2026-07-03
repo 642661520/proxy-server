@@ -1,19 +1,4 @@
-import type { ProxyConfig } from '../modules/proxies/proxy.service.js';
-import { createRequire } from 'module';
-
-// Lazy require -- gracefully degrades when DB modules are unavailable (YAML mode)
-let _getInjectionRulesByProxyId: Function | null = null;
-function getInjectionRulesByProxyId(proxyId: number): any[] {
-  if (!_getInjectionRulesByProxyId) {
-    try {
-      _getInjectionRulesByProxyId = createRequire(import.meta.url)
-        ('../modules/injection-rules/injection-rule.service.js').getInjectionRulesByProxyId;
-    } catch {
-      _getInjectionRulesByProxyId = () => [];
-    }
-  }
-  return _getInjectionRulesByProxyId!(proxyId);
-}
+import type { ProxyConfig } from '../types.js';
 
 export interface InjectorResult {
   path: string;
@@ -28,18 +13,14 @@ export function applyInjections(
   const queryParams = new URLSearchParams(reqQuery || '');
   const extraHeaders: Record<string, string> = {};
 
-  // Inline injections (YAML mode) take priority over DB lookups
-  const sources = proxy._injections
-    ? proxy._injections.filter(r => r.enabled).map(r => ({
-        key_value: r.key_value,
-        inject_into: r.inject_into,
-        inject_name: r.inject_name,
-      }))
-    : getInjectionRulesByProxyId(proxy.id).filter((r: any) => r.enabled).map((r: any) => ({
-        key_value: r.key_value,
-        inject_into: r.inject_into,
-        inject_name: r.inject_name,
-      }));
+  // Use inline injections from YAML config
+  const sources = (proxy._injections || [])
+    .filter(r => r.enabled)
+    .map(r => ({
+      key_value: r.key_value,
+      inject_into: r.inject_into,
+      inject_name: r.inject_name,
+    }));
 
   for (const rule of sources) {
     switch (rule.inject_into) {
