@@ -53,18 +53,18 @@ const pageNumbers = computed(() => {
       </tbody>
     </table>
     <div v-if="data.length === 0" class="py-12 text-center text-sm text-slate-500 dark:text-slate-400">{{ t.common.noData }}</div>
-  </div>
-  <div v-if="pagination" class="flex flex-wrap items-center justify-between gap-2 mt-4 text-sm text-slate-500 dark:text-slate-400">
-    <span>{{ t.common.total }} {{ pagination.total }} {{ t.common.records }}</span>
-    <div class="flex gap-1 flex-wrap">
-      <button
-        v-for="p in pageNumbers"
-        :key="p"
-        :disabled="p === '...'"
-        class="w-8 h-8 rounded-lg text-sm font-medium transition-colors disabled:cursor-default"
-        :class="p === pagination.page ? 'bg-blue-600 text-white' : p === '...' ? 'text-slate-400' : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'"
-        @click="typeof p === 'number' && onPageChange(p)"
-      >{{ p }}</button>
+    <div v-if="pagination" class="flex flex-wrap items-center justify-between gap-2 pt-4 border-t border-slate-100 dark:border-slate-700 text-sm text-slate-500 dark:text-slate-400">
+      <span>{{ t.common.total }} {{ pagination.total }} {{ t.common.records }}</span>
+      <div class="flex gap-1 flex-wrap">
+        <button
+          v-for="p in pageNumbers"
+          :key="p"
+          :disabled="p === '...'"
+          class="w-8 h-8 rounded-lg text-sm font-medium transition-colors disabled:cursor-default"
+          :class="p === pagination.page ? 'bg-blue-600 text-white' : p === '...' ? 'text-slate-400' : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'"
+          @click="typeof p === 'number' && onPageChange(p)"
+        >{{ p }}</button>
+      </div>
     </div>
   </div>
 </template>
