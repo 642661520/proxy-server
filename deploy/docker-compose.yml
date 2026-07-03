@@ -11,6 +11,8 @@ services:
     volumes:
       - ./config.yaml:/app/config.yaml:ro
       - ../static-demo:/app/www:ro        # 静态文件目录
+      - ../data/logs:/app/data/logs       # 日志目录
     environment:
+      - NODE_ENV=production
       - CONFIG_FILE=/app/config.yaml
     restart: unless-stopped

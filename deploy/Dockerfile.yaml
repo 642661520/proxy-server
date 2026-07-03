@@ -17,6 +17,6 @@ COPY server/tsconfig.json ./
 COPY deploy/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-RUN mkdir -p /app/www
+RUN mkdir -p /app/www /app/data/logs
 EXPOSE 3000
 ENTRYPOINT ["/entrypoint.sh"]
