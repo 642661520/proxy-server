@@ -88,7 +88,7 @@ const icons: Record<string, string> = {
           <button class="btn-ghost btn-sm" @click="logout" :title="t.auth.logout"><span class="i-mdi-logout text-xl" /></button>
         </div>
       </header>
-      <main class="flex-1 p-4 sm:p-6"><RouterView /></main>
+      <main class="flex-1 p-4 sm:p-6 overflow-y-auto"><RouterView /></main>
 
       <!-- Password modal -->
       <AppModal v-model="showPwdModal"><template #title>{{ t.auth.changePassword }}</template>
