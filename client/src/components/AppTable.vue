@@ -47,7 +47,7 @@ const pageNumbers = computed(() => {
         <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
           <tr v-for="(row, i) in data" :key="i" class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
             <td v-for="col in columns" :key="col.key" class="table-td">
-              <template v-if="col.render">{{ col.render(row) }}</template>
+              <component v-if="col.render" :is="() => col.render!(row)" />
               <template v-else>{{ row[col.key] }}</template>
             </td>
           </tr>
