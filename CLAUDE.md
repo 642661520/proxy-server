@@ -145,6 +145,7 @@ cd deploy && docker-compose up -d
 | `PROXY_PORT` | 3000 | 代理引擎端口 |
 | `NODE_ENV` | development | 生产设 `production`（影响日志级别和错误详情） |
 | `LOG_DIR` | ./data/logs | 日志目录 |
+| `LOG_RETENTION_DAYS` | 30 | 日志保留天数 |
 | `DATA_DIR` | ./data | 数据目录 |
 | `TDT_API_KEY` | — | 天地图 API 密钥（YAML 中引用 `${TDT_API_KEY}`） |
 
