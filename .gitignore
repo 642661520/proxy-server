@@ -7,3 +7,6 @@ data/
 Thumbs.db
 *.tar
 config.yaml
+*.zip
+*.tsbuildinfo
+client/src/**/*.js
