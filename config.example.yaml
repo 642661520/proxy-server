@@ -44,4 +44,4 @@ proxies:
     injections:
       - into: query
         name: tk
-        value: b20a5cf27754495fb3f572f39a0c0a9c
+        value: your_token
